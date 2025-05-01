@@ -10,8 +10,9 @@ return new class extends Migration
     {
         Schema::create('categories', function (Blueprint $table) {
             $table->increments('CategoryId');
-            $table->integer('Name');
-            $table->text('Description')->nullable();
+            $table->string('Name', 255);  // Cambiado a 'string' para nombre de la categoría
+            $table->text('Description')->nullable();  // Descripción opcional
+            $table->timestamps();  // Agregar timestamps para 'created_at' y 'updated_at'
         });
     }
 
@@ -19,5 +20,4 @@ return new class extends Migration
     {
         Schema::dropIfExists('categories');
     }
-
 };

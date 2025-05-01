@@ -16,9 +16,10 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('products', function (Blueprint $table) {
-            $table->dropIndex('IX_Product_CategoryId');
-            $table->dropIndex('IX_Product_ProviderId');
+            $table->dropForeign(['CategoryId']);  // Eliminar la clave foránea antes de eliminar el índice
+            $table->dropIndex('IX_Product_CategoryId');  // Ahora eliminar el índice
         });
+
     }
 
 };
