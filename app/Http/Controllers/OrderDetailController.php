@@ -3,63 +3,74 @@
 namespace App\Http\Controllers;
 
 use App\Models\OrderDetail;
+use App\Models\Order;
+use App\Models\Product;
 use Illuminate\Http\Request;
 
 class OrderDetailController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
     public function index()
     {
-        //
+        $details = OrderDetail::with(['order','product'])->get();
+        return view('order-details.index', compact('details'));
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
     public function create()
     {
-        //
+        $orders   = Order::pluck('OrderId','OrderId');
+        $products = Product::pluck('Name','ProductId');
+        return view('order-details.create', compact('orders','products'));
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(Request $request)
     {
-        //
+        $data = $request->validate([
+            'OrderId'   => 'required|exists:orders,OrderId',
+            'ProductId' => 'required|exists:products,ProductId',
+            'Quantity'  => 'required|integer|min:1',
+            'UnitPrice' => 'nullable|numeric|min:0',
+            'CouponId'  => 'nullable|integer',
+        ]);
+
+        OrderDetail::create($data);
+
+        return redirect()
+            ->route('order-details.index')
+            ->with('success', 'Detalle de pedido creado correctamente.');
     }
 
-    /**
-     * Display the specified resource.
-     */
     public function show(OrderDetail $orderDetail)
     {
-        //
+        return view('order-details.show', compact('orderDetail'));
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
     public function edit(OrderDetail $orderDetail)
     {
-        //
+        // No permitimos cambiar OrderId/ProductId en el edit
+        return view('order-details.edit', compact('orderDetail'));
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
     public function update(Request $request, OrderDetail $orderDetail)
     {
-        //
+        $data = $request->validate([
+            'Quantity'  => 'required|integer|min:1',
+            'UnitPrice' => 'nullable|numeric|min:0',
+            'CouponId'  => 'nullable|integer',
+        ]);
+
+        $orderDetail->update($data);
+
+        return redirect()
+            ->route('order-details.index')
+            ->with('success', 'Detalle de pedido actualizado correctamente.');
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
     public function destroy(OrderDetail $orderDetail)
     {
-        //
+        $orderDetail->delete();
+
+        return redirect()
+            ->route('order-details.index')
+            ->with('success', 'Detalle de pedido eliminado correctamente.');
     }
 }

@@ -1,13 +1,45 @@
 @extends('layouts.app')
-@section('title','Detalle de Entidad')
+
+@section('title','Editar Entidad')
 
 @section('content')
-  <h1>Detalle de Entidad</h1>
+  <h1>Editar Entidad</h1>
+  <form action="{{ route('entities.update', $entity) }}" method="POST">
+    @csrf
+    @method('PATCH')
 
-  <p><strong>ID:</strong> {{ $entity->EntityId }}</p>
-  <p><strong>País:</strong> {{ $entity->country->Name }}</p>
-  <p><strong>Nombre:</strong> {{ $entity->Name }}</p>
-  <p><strong>Status:</strong> {{ $entity->Status ? 'Activo':'Inactivo' }}</p>
+    <div class="form-group">
+      <label for="CountryId">País</label>
+      <select name="CountryId" id="CountryId" required>
+        @foreach($countries as $country)
+          <option value="{{ $country->CountryId }}"
+            {{ $entity->CountryId == $country->CountryId ? 'selected' : '' }}>
+            {{ $country->Name }}
+          </option>
+        @endforeach
+      </select>
+    </div>
 
-  <a href="{{ route('entities.index') }}" class="btn">Volver</a>
+    <div class="form-group">
+      <label for="Name">Nombre</label>
+      <input
+        type="text"
+        name="Name"
+        id="Name"
+        value="{{ $entity->Name }}"
+        maxlength="256"
+        required
+      >
+    </div>
+
+    <div class="form-group">
+      <label for="Status">Status</label>
+      <select name="Status" id="Status">
+        <option value="1" {{ $entity->Status ? 'selected' : '' }}>Activo</option>
+        <option value="0" {{ !$entity->Status ? 'selected' : '' }}>Inactivo</option>
+      </select>
+    </div>
+
+    <button type="submit" class="btn">Actualizar</button>
+  </form>
 @endsection

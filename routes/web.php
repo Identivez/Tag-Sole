@@ -50,3 +50,4 @@ Route::resource('payments', PaymentController::class);
 Route::resource('order-details', OrderDetailController::class);
 Route::resource('reviews', ReviewController::class);
 Route::resource('provider-details', ProviderDetailController::class);
+//Route::resource('role-users', \App\Http\Controllers\RoleUserController::class);

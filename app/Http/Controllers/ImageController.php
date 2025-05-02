@@ -3,63 +3,68 @@
 namespace App\Http\Controllers;
 
 use App\Models\Image;
+use App\Models\Product;
 use Illuminate\Http\Request;
 
 class ImageController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
     public function index()
     {
-        //
+        $images = Image::with('product')->get();
+        return view('images.index', compact('images'));
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
     public function create()
     {
-        //
+        $products = Product::pluck('Name', 'ProductId');
+        return view('images.create', compact('products'));
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(Request $request)
     {
-        //
+        $data = $request->validate([
+            'ProductId'     => 'required|exists:products,ProductId',
+            'ImageFileName' => 'nullable|string',
+        ]);
+
+        Image::create($data);
+
+        return redirect()
+            ->route('images.index')
+            ->with('success', 'Imagen creada correctamente.');
     }
 
-    /**
-     * Display the specified resource.
-     */
     public function show(Image $image)
     {
-        //
+        return view('images.show', compact('image'));
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
     public function edit(Image $image)
     {
-        //
+        $products = Product::pluck('Name', 'ProductId');
+        return view('images.edit', compact('image','products'));
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
     public function update(Request $request, Image $image)
     {
-        //
+        $data = $request->validate([
+            'ImageFileName' => 'nullable|string',
+        ]);
+
+        // Solo actualizamos el filename; el ProductId permanece fijo
+        $image->update($data);
+
+        return redirect()
+            ->route('images.index')
+            ->with('success', 'Imagen actualizada correctamente.');
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
     public function destroy(Image $image)
     {
-        //
+        $image->delete();
+
+        return redirect()
+            ->route('images.index')
+            ->with('success', 'Imagen eliminada correctamente.');
     }
 }

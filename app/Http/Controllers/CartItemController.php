@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\CartItem;
+use App\Models\User;
+use App\Models\Product;
 use Illuminate\Http\Request;
 
 class CartItemController extends Controller
@@ -12,7 +14,8 @@ class CartItemController extends Controller
      */
     public function index()
     {
-        //
+        $items = CartItem::with(['user','product'])->get();
+        return view('cart-items.index', compact('items'));
     }
 
     /**
@@ -20,7 +23,16 @@ class CartItemController extends Controller
      */
     public function create()
     {
-        //
+        // Combina firstName y lastName para el dropdown de usuarios
+        $users = User::all()->mapWithKeys(function($u) {
+            return [
+                $u->UserId => "{$u->firstName} {$u->lastName}"
+            ];
+        });
+
+        $products = Product::pluck('Name', 'ProductId');
+
+        return view('cart-items.create', compact('users','products'));
     }
 
     /**
@@ -28,7 +40,19 @@ class CartItemController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $data = $request->validate([
+            'UserId'    => 'required|exists:users,UserId',
+            'ProductId' => 'required|exists:products,ProductId',
+            'Quantity'  => 'required|integer|min:1',
+            'Price'     => 'required|numeric|min:0',
+            'Total'     => 'nullable|numeric|min:0',
+        ]);
+
+        CartItem::create($data);
+
+        return redirect()
+            ->route('cart-items.index')
+            ->with('success', 'Ítem de carrito creado correctamente.');
     }
 
     /**
@@ -36,7 +60,7 @@ class CartItemController extends Controller
      */
     public function show(CartItem $cartItem)
     {
-        //
+        return view('cart-items.show', compact('cartItem'));
     }
 
     /**
@@ -44,7 +68,15 @@ class CartItemController extends Controller
      */
     public function edit(CartItem $cartItem)
     {
-        //
+        $users = User::all()->mapWithKeys(function($u) {
+            return [
+                $u->UserId => "{$u->firstName} {$u->lastName}"
+            ];
+        });
+
+        $products = Product::pluck('Name', 'ProductId');
+
+        return view('cart-items.edit', compact('cartItem','users','products'));
     }
 
     /**
@@ -52,7 +84,17 @@ class CartItemController extends Controller
      */
     public function update(Request $request, CartItem $cartItem)
     {
-        //
+        $data = $request->validate([
+            'Quantity'  => 'required|integer|min:1',
+            'Price'     => 'required|numeric|min:0',
+            'Total'     => 'nullable|numeric|min:0',
+        ]);
+
+        $cartItem->update($data);
+
+        return redirect()
+            ->route('cart-items.index')
+            ->with('success', 'Ítem de carrito actualizado correctamente.');
     }
 
     /**
@@ -60,6 +102,10 @@ class CartItemController extends Controller
      */
     public function destroy(CartItem $cartItem)
     {
-        //
+        $cartItem->delete();
+
+        return redirect()
+            ->route('cart-items.index')
+            ->with('success', 'Ítem de carrito eliminado correctamente.');
     }
 }
