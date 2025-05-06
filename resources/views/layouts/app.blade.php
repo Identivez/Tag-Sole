@@ -1,30 +1,48 @@
+{{-- resources/views/layouts/app.blade.php --}}
 <!DOCTYPE html>
-<html lang="en">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>@yield('title', 'Mi App')</title>
-  <link rel="stylesheet" href="{{ asset('css/app.css') }}">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+
+    <title>{{ config('app.name', 'Laravel') }}</title>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.bunny.net">
+    <link
+      href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- Styles & Scripts -->
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
-<body>
-  <header>
-    <nav>
-      <a href="{{ route('countries.index') }}">Países</a> |
-      <a href="{{ route('entities.index') }}">Entidades</a> |
-      <!-- añade aquí más enlaces -->
-    </nav>
-  </header>
+<body class="font-sans antialiased">
+    <div class="min-h-screen bg-gray-100">
 
-  <main class="container">
-    @if(session('success'))
-      <div class="alert success">{{ session('success') }}</div>
-    @endif
+        {{-- Navegación principal --}}
+        @include('layouts.navigation')
 
-    @yield('content')
-  </main>
+        {{-- Encabezado de página (opcional) --}}
+        @hasSection('header')
+            <header class="bg-white shadow">
+                <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+                    @yield('header')
+                </div>
+            </header>
+        @endif
 
-  <footer>
-    <p>&copy; {{ date('Y') }} Mi Proyecto</p>
-  </footer>
+        {{-- Contenido principal --}}
+        <main class="py-6">
+            <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+                @yield('content')
+            </div>
+        </main>
+
+    </div>
+
+    {{-- Scripts adicionales --}}
+    @stack('scripts')
 </body>
 </html>
