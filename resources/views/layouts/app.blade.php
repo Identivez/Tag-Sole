@@ -1,48 +1,35 @@
-{{-- resources/views/layouts/app.blade.php --}}
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+<html lang="en">
 <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="csrf-token" content="{{ csrf_token() }}">
-
-    <title>{{ config('app.name', 'Laravel') }}</title>
-
-    <!-- Fonts -->
-    <link rel="preconnect" href="https://fonts.bunny.net">
-    <link
-      href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap"
-      rel="stylesheet"
-    />
-
-    <!-- Styles & Scripts -->
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>@yield('title', 'Mi App')</title>
+  <link rel="stylesheet" href="{{ asset('css/app.css') }}">
+  <link rel="stylesheet" href="{{ asset('css/dashboard.css') }}">
 </head>
-<body class="font-sans antialiased">
-    <div class="min-h-screen bg-gray-100">
+<body>
+  <header>
+    <nav>
+      <a href="{{ route('dashboard') }}">Panel de Control</a> |
+      <a href="{{ route('countries.index') }}">Países</a> |
+      <a href="{{ route('entities.index') }}">Entidades</a> |
+      <a href="{{ route('municipalities.index') }}">Municipios</a> |
+      <a href="{{ route('users.index') }}">Usuarios</a> |
+      <a href="{{ route('products.index') }}">Productos</a> |
+      <a href="{{ route('orders.index') }}">Pedidos</a>
+    </nav>
+  </header>
 
-        {{-- Navegación principal --}}
-        @include('layouts.navigation')
+  <main class="container">
+    @if(session('success'))
+      <div class="alert success">{{ session('success') }}</div>
+    @endif
 
-        {{-- Encabezado de página (opcional) --}}
-        @hasSection('header')
-            <header class="bg-white shadow">
-                <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
-                    @yield('header')
-                </div>
-            </header>
-        @endif
+    @yield('content')
+  </main>
 
-        {{-- Contenido principal --}}
-        <main class="py-6">
-            <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-                @yield('content')
-            </div>
-        </main>
-
-    </div>
-
-    {{-- Scripts adicionales --}}
-    @stack('scripts')
+  <footer>
+    <p>&copy; {{ date('Y') }} Mi Proyecto</p>
+  </footer>
 </body>
 </html>
