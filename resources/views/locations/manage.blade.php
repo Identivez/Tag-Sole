@@ -1,182 +1,21 @@
-# Guía de Implementación: Consultas y Actualizaciones Asíncronas
+{{--
+/**
+ * Vista para la gestión jerárquica de ubicaciones geográficas.
+ *
+ * Esta plantilla implementa una interfaz jerárquica país -> entidad -> municipio
+ * con selects encadenados que cargan dinámicamente y permiten la actualización
+ * del estado de activación de los municipios.
+ *
+ * @extends layouts.app
+ * @section title "Gestión de Ubicaciones"
+ * @uses LocationController::getEntities() Para cargar entidades de un país
+ * @uses LocationController::getMunicipalities() Para cargar municipios de una entidad
+ * @uses LocationController::getMunicipalityDetails() Para obtener detalles de un municipio
+ * @uses LocationController::updateMunicipalityStatus() Para actualizar el estado de un municipio
+ * @requires jQuery 3.6+
+ */
+--}}
 
-Este documento técnico proporciona una guía completa para implementar una interfaz de usuario con consultas y actualizaciones asíncronas a una base de datos utilizando Laravel y jQuery AJAX.
-
-## Índice
-1. [Objetivo](#objetivo)
-2. [Tecnologías utilizadas](#tecnologías-utilizadas)
-3. [Archivos a crear o modificar](#archivos-a-crear-o-modificar)
-4. [Implementación paso a paso](#implementación-paso-a-paso)
-   - [Controlador](#1-controlador-locationcontrollerphp)
-   - [Rutas](#2-rutas-en-routeswebphp)
-   - [Vista](#3-vista-resourcesviewslocationsmanagebladephphp)
-   - [Layout principal](#4-ajuste-del-layout-principal)
-5. [Flujo de funcionamiento](#flujo-de-funcionamiento)
-6. [Consideraciones y mejores prácticas](#consideraciones-y-mejores-prácticas)
-7. [Extensiones posibles](#extensiones-posibles)
-
-## Objetivo
-
-Esta implementación permite:
-
-1. **Consultas asíncronas jerárquicas**: Cargar datos dinámicamente en selectores dependientes (país → entidad → municipio)
-2. **Visualización dinámica**: Mostrar información detallada sobre el ítem seleccionado
-3. **Actualizaciones asíncronas**: Modificar datos en la base de datos sin recargar la página
-
-## Tecnologías utilizadas
-
-* **Backend**: Laravel (PHP)
-* **Frontend**: HTML, CSS, JavaScript (jQuery)
-* **Comunicación**: AJAX
-* **Seguridad**: CSRF Token de Laravel
-* **Presentación**: Bootstrap (componentes visuales)
-
-## Archivos a crear o modificar
-
-| Archivo | Propósito |
-|---------|-----------|
-| `app/Http/Controllers/LocationController.php` | Controlador para manejar las solicitudes HTTP |
-| `routes/web.php` | Definir las rutas de la aplicación |
-| `resources/views/locations/manage.blade.php` | Vista para la interfaz de usuario |
-| `resources/views/layouts/app.blade.php` | Layout principal para incluir jQuery |
-
-## Implementación paso a paso
-
-### 1. Controlador (`LocationController.php`)
-
-Este controlador gestiona todas las interacciones relacionadas con ubicaciones geográficas.
-
-```php
-<?php
-
-namespace App\Http\Controllers;
-
-use App\Models\Country;
-use App\Models\Entity;
-use App\Models\Municipality;
-use Illuminate\Http\Request;
-
-class LocationController extends Controller
-{
-    /**
-     * Mostrar la vista principal de gestión de ubicaciones.
-     *
-     * @return \Illuminate\View\View
-     */
-    public function index()
-    {
-        $countries = Country::orderBy('Name')->get();
-        return view('locations.manage', compact('countries'));
-    }
-
-    /**
-     * Obtener entidades pertenecientes a un país específico.
-     *
-     * @param int $countryId ID del país
-     * @return \Illuminate\Http\JsonResponse
-     */
-    public function getEntities($countryId)
-    {
-        $entities = Entity::where('CountryId', $countryId)
-            ->orderBy('Name')
-            ->get();
-
-        return response()->json($entities);
-    }
-
-    /**
-     * Obtener municipios pertenecientes a una entidad específica.
-     *
-     * @param int $entityId ID de la entidad
-     * @return \Illuminate\Http\JsonResponse
-     */
-    public function getMunicipalities($entityId)
-    {
-        $municipalities = Municipality::where('EntityId', $entityId)
-            ->orderBy('Name')
-            ->get();
-
-        return response()->json($municipalities);
-    }
-
-    /**
-     * Obtener detalles completos de un municipio, incluyendo su entidad y país.
-     *
-     * @param int $municipalityId ID del municipio
-     * @return \Illuminate\Http\JsonResponse
-     */
-    public function getMunicipalityDetails($municipalityId)
-    {
-        $municipality = Municipality::with(['entity.country'])
-            ->findOrFail($municipalityId);
-
-        return response()->json($municipality);
-    }
-
-    /**
-     * Actualizar el estado de activación de un municipio.
-     *
-     * @param \Illuminate\Http\Request $request Contiene el nuevo estado
-     * @param int $municipalityId ID del municipio
-     * @return \Illuminate\Http\JsonResponse
-     */
-    public function updateMunicipalityStatus(Request $request, $municipalityId)
-    {
-        $municipality = Municipality::findOrFail($municipalityId);
-
-        // Guardar el estado anterior
-        $oldStatus = $municipality->Status;
-
-        // Actualizar el estado
-        $municipality->Status = $request->Status;
-        $municipality->save();
-
-        return response()->json([
-            'success' => true,
-            'oldStatus' => $oldStatus,
-            'newStatus' => $municipality->Status,
-            'municipality' => $municipality
-        ]);
-    }
-}
-```
-
-#### Puntos clave del controlador:
-
-- Utiliza **eager loading** con el método `with()` para cargar relaciones anidadas y evitar el problema N+1
-- Usa `findOrFail()` para lanzar una excepción 404 automáticamente cuando un registro no existe
-- Devuelve respuestas en formato JSON, ideal para comunicaciones AJAX
-- Incluye información de estado anterior y nuevo para mostrar en la interfaz
-
-### 2. Rutas en `routes/web.php`
-
-```php
-// Rutas para gestión de ubicaciones
-Route::get('/locations', [App\Http\Controllers\LocationController::class, 'index'])
-    ->name('locations.manage');
-
-Route::get('/locations/entities/{countryId}',
-    [App\Http\Controllers\LocationController::class, 'getEntities']);
-
-Route::get('/locations/municipalities/{entityId}',
-    [App\Http\Controllers\LocationController::class, 'getMunicipalities']);
-
-Route::get('/locations/municipality/{municipalityId}/details',
-    [App\Http\Controllers\LocationController::class, 'getMunicipalityDetails']);
-
-Route::put('/locations/municipality/{municipalityId}/status',
-    [App\Http\Controllers\LocationController::class, 'updateMunicipalityStatus']);
-```
-
-#### Puntos clave de las rutas:
-
-- Solo la primera ruta tiene un nombre (`locations.manage`) ya que es la única que se usa en enlaces
-- Usa el método HTTP `PUT` para actualizar datos, siguiendo convenciones RESTful
-- Las rutas siguen una estructura jerárquica clara
-
-### 3. Vista (`resources/views/locations/manage.blade.php`)
-
-```blade
 @extends('layouts.app')
 
 @section('title', 'Gestión de Ubicaciones')
@@ -186,9 +25,9 @@ Route::put('/locations/municipality/{municipalityId}/status',
     <h1>Gestión de Ubicaciones</h1>
 
     <div class="row">
-        <!-- Panel de selección jerárquica -->
+        {{-- Panel de selección jerárquica (país -> entidad -> municipio) --}}
         <div class="col-md-4">
-            <!-- Selector de país - Primer nivel -->
+            {{-- Selector de país - Primer nivel de la jerarquía --}}
             <div class="form-group">
                 <label for="country_id">País:</label>
                 <select id="country_id" class="form-control">
@@ -199,7 +38,7 @@ Route::put('/locations/municipality/{municipalityId}/status',
                 </select>
             </div>
 
-            <!-- Selector de entidad - Segundo nivel -->
+            {{-- Selector de entidad - Segundo nivel (depende del país) --}}
             <div class="form-group">
                 <label for="entity_id">Entidad:</label>
                 <select id="entity_id" class="form-control" disabled>
@@ -207,7 +46,7 @@ Route::put('/locations/municipality/{municipalityId}/status',
                 </select>
             </div>
 
-            <!-- Selector de municipio - Tercer nivel -->
+            {{-- Selector de municipio - Tercer nivel (depende de la entidad) --}}
             <div class="form-group">
                 <label for="municipality_id">Municipio:</label>
                 <select id="municipality_id" class="form-control" disabled>
@@ -216,7 +55,7 @@ Route::put('/locations/municipality/{municipalityId}/status',
             </div>
         </div>
 
-        <!-- Panel de detalles y edición -->
+        {{-- Panel de detalles y edición --}}
         <div class="col-md-8">
             <div id="details_container" class="card">
                 <div class="card-header">
@@ -233,9 +72,22 @@ Route::put('/locations/municipality/{municipalityId}/status',
 
 @section('scripts')
 <script>
+    /**
+     * Gestión interactiva de ubicaciones geográficas jerárquicas.
+     *
+     * Este script implementa una interfaz de navegación y edición jerárquica
+     * para ubicaciones: país -> entidad -> municipio, con carga dinámica
+     * de selects dependientes y funcionalidad para actualizar el estado
+     * de los municipios.
+     *
+     * @requires jQuery 3.6+
+     */
     $(document).ready(function() {
         /**
-         * Manejador para cargar entidades al seleccionar un país
+         * Manejador para cargar entidades al cambiar el país seleccionado.
+         *
+         * Al seleccionar un país, carga las entidades correspondientes mediante AJAX
+         * y reinicia los selects de entidades y municipios dependientes.
          */
         $('#country_id').on('change', function() {
             const countryId = $(this).val();
@@ -274,7 +126,10 @@ Route::put('/locations/municipality/{municipalityId}/status',
         });
 
         /**
-         * Manejador para cargar municipios al seleccionar una entidad
+         * Manejador para cargar municipios al cambiar la entidad seleccionada.
+         *
+         * Al seleccionar una entidad, carga los municipios correspondientes mediante AJAX
+         * y reinicia el select de municipios y el panel de detalles.
          */
         $('#entity_id').on('change', function() {
             const entityId = $(this).val();
@@ -311,7 +166,11 @@ Route::put('/locations/municipality/{municipalityId}/status',
         });
 
         /**
-         * Manejador para cargar detalles del municipio seleccionado
+         * Manejador para cargar detalles del municipio seleccionado.
+         *
+         * Al seleccionar un municipio, carga los detalles completos mediante AJAX,
+         * incluyendo información sobre su entidad y país, y genera una interfaz
+         * para modificar su estado de activación.
          */
         $('#municipality_id').on('change', function() {
             const municipalityId = $(this).val();
@@ -328,6 +187,7 @@ Route::put('/locations/municipality/{municipalityId}/status',
                             '<span class="badge badge-success">Activo</span>' :
                             '<span class="badge badge-danger">Inactivo</span>';
 
+                        // Generar interfaz de detalle y edición
                         let html = `
                             <div class="municipality-details">
                                 <h3>${data.Name}</h3>
@@ -354,7 +214,10 @@ Route::put('/locations/municipality/{municipalityId}/status',
                         detailsContainer.html(html);
 
                         /**
-                         * Manejador interno para el botón de actualización de estado
+                         * Manejador para actualizar el estado de un municipio.
+                         *
+                         * Envía el nuevo estado mediante AJAX al servidor y
+                         * actualiza la interfaz con el resultado de la operación.
                          */
                         $('#update_status').on('click', function() {
                             const munId = $(this).data('mun-id');
@@ -370,6 +233,7 @@ Route::put('/locations/municipality/{municipalityId}/status',
                                 },
                                 success: function(response) {
                                     if (response.success) {
+                                        // Preparar mensajes de retroalimentación
                                         const oldStatusText = response.oldStatus ? 'Activo' : 'Inactivo';
                                         const newStatusText = response.newStatus ? 'Activo' : 'Inactivo';
 
@@ -382,7 +246,7 @@ Route::put('/locations/municipality/{municipalityId}/status',
                                             </div>
                                         `);
 
-                                        // Actualizar badge de estado
+                                        // Actualizar badge de estado en la interfaz
                                         const newBadge = response.newStatus ?
                                             '<span class="badge badge-success">Activo</span>' :
                                             '<span class="badge badge-danger">Inactivo</span>';
@@ -413,63 +277,3 @@ Route::put('/locations/municipality/{municipalityId}/status',
     });
 </script>
 @endsection
-```
-
-#### Puntos clave de la vista:
-
-- Utiliza Bootstrap para la estructura y componentes visuales
-- Estructura en dos columnas: selección (izquierda) y detalle/edición (derecha)
-- La interfaz de edición de estado se genera dinámicamente según la selección
-- Los manejadores de eventos están anidados para reflejar la jerarquía de la interfaz
-
-### 4. Ajuste del layout principal
-
-Para que la funcionalidad AJAX funcione correctamente, es necesario incluir jQuery en el layout principal `resources/views/layouts/app.blade.php`:
-
-```blade
-<script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
-@yield('scripts')
-```
-
-## Flujo de funcionamiento
-
-1. **Inicio**: Se cargan todos los países en el selector inicial.
-2. **Selección de país**: Al elegir un país, se cargan dinámicamente sus entidades.
-3. **Selección de entidad**: Al elegir una entidad, se cargan dinámicamente sus municipios.
-4. **Selección de municipio**: Al elegir un municipio, se cargan y muestran sus detalles completos.
-5. **Edición de estado**: Al cambiar el estado y hacer clic en "Actualizar", se guarda el cambio y se actualiza la interfaz.
-
-## Consideraciones y mejores prácticas
-
-1. **Seguridad**:
-   - Se utiliza el token CSRF de Laravel en las peticiones PUT
-   - Se usan los métodos HTTP apropiados según la operación (GET para consulta, PUT para actualización)
-
-2. **Experiencia de usuario**:
-   - Los selects se habilitan/deshabilitan de forma apropiada
-   - Se proporcionan mensajes claros de éxito o error
-   - Se usa un sistema de colores en los badges para diferenciar estados
-
-3. **Desarrollo**:
-   - Código organizado con comentarios descriptivos
-   - Manejo apropiado de errores
-   - Uso consistente de convenciones de nombres
-
-4. **Rendimiento**:
-   - Carga lazy de datos (solo se cargan cuando son necesarios)
-   - Uso de eager loading para evitar múltiples consultas
-
-## Extensiones posibles
-
-Esta implementación puede extenderse para:
-
-- Implementar paginación en listas largas de entidades/municipios
-- Agregar búsqueda/filtrado en los selectores
-- Implementar más operaciones CRUD como creación o eliminación
-- Mejorar la interfaz con animaciones durante las cargas
-- Implementar caché de resultados frecuentes
-- Agregar validación más compleja en el frontend y backend
-
----
-
-Con esta documentación, cualquier desarrollador podrá implementar un sistema de consultas y actualizaciones asíncronas en Laravel siguiendo un patrón bien estructurado y mantenible.
