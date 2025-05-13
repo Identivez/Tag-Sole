@@ -135,3 +135,13 @@ Route::get('/locations/entity/{entityId}/details',
 
 Route::put('/locations/entity/{entityId}/update',
     [App\Http\Controllers\LocationController::class, 'updateEntityName']);
+
+
+    // Rutas para gestión de productos con AJAX
+Route::get('/productos/ajax', [App\Http\Controllers\ProductAjaxController::class, 'index'])->name('products.ajax');
+Route::get('/productos/buscar/{categoryId}', [App\Http\Controllers\ProductAjaxController::class, 'buscarProductos']);
+Route::get('/productos/incrementar/{productId}/{categoryId}', [App\Http\Controllers\ProductAjaxController::class, 'incrementarStock']);
+Route::get('/productos/decrementar/{productId}/{categoryId}', [App\Http\Controllers\ProductAjaxController::class, 'decrementarStock']);
+Route::get('/productos/proveedor/{providerId}', [App\Http\Controllers\ProductAjaxController::class, 'buscarProductosPorProveedor']);
+Route::get('/productos/obtener/{productId}', [App\Http\Controllers\ProductAjaxController::class, 'obtenerProducto']);
+Route::put('/productos/actualizar/{productId}', [App\Http\Controllers\ProductAjaxController::class, 'actualizarProducto']);
