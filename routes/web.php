@@ -48,6 +48,14 @@ Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard
 Route::get('/', function () {
     return redirect()->route('dashboard');
 });
+//Marketplace
+Route::get('/', function () {
+    return view('home');
+});
+Route::view('/sneakers', 'sneakers');
+Route::view('/accesorios', 'accesorios');
+Route::view('/moda', 'moda');
+
 
 /**
  * Rutas AJAX para carga dinámica de datos.
