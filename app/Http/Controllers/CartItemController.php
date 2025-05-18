@@ -6,16 +6,31 @@ use App\Models\CartItem;
 use App\Models\User;
 use App\Models\Product;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class CartItemController extends Controller
 {
     /**
-     * Display a listing of the resource.
+     * Display a listing of all cart items (admin view).
      */
     public function index()
     {
         $items = CartItem::with(['user','product'])->get();
         return view('cart-items.index', compact('items'));
+    }
+
+    /**
+     * Display the shopping cart for the authenticated user.
+     */
+    public function viewCart()
+    {
+        $cartItems = CartItem::where('UserId', Auth::id())
+            ->with('product')
+            ->get();
+
+        $total = $cartItems->sum('Total');
+
+        return view('cart.index', compact('cartItems', 'total'));
     }
 
     /**
@@ -36,7 +51,7 @@ class CartItemController extends Controller
     }
 
     /**
-     * Store a newly created resource in storage.
+     * Store a newly created resource in storage (admin).
      */
     public function store(Request $request)
     {
@@ -48,11 +63,86 @@ class CartItemController extends Controller
             'Total'     => 'nullable|numeric|min:0',
         ]);
 
+        // Calcular el total si no está establecido
+        if (!isset($data['Total'])) {
+            $data['Total'] = $data['Price'] * $data['Quantity'];
+        }
+
         CartItem::create($data);
 
         return redirect()
             ->route('cart-items.index')
             ->with('success', 'Ítem de carrito creado correctamente.');
+    }
+
+    /**
+     * Add a product to the user's cart.
+     */
+    public function addToCart(Request $request)
+    {
+        $validated = $request->validate([
+            'ProductId' => 'required|exists:products,ProductId',
+            'Quantity' => 'required|integer|min:1',
+        ]);
+
+        $product = Product::findOrFail($validated['ProductId']);
+
+        // Verificar si el producto ya existe en el carrito
+        $existingItem = CartItem::where('UserId', Auth::id())
+            ->where('ProductId', $validated['ProductId'])
+            ->first();
+
+        if ($existingItem) {
+            // Actualizar cantidad
+            $existingItem->Quantity += $validated['Quantity'];
+            $existingItem->Total = $existingItem->Price * $existingItem->Quantity;
+            $existingItem->save();
+        } else {
+            // Añadir nuevo ítem
+            CartItem::create([
+                'UserId' => Auth::id(),
+                'ProductId' => $validated['ProductId'],
+                'Quantity' => $validated['Quantity'],
+                'Price' => $product->Price,
+                'Total' => $product->Price * $validated['Quantity'],
+            ]);
+        }
+
+        return redirect()->back()->with('success', 'Producto añadido al carrito.');
+    }
+
+    /**
+     * Update the quantity of an item in the user's cart.
+     */
+    public function updateQuantity(Request $request, $cartId)
+    {
+        $validated = $request->validate([
+            'Quantity' => 'required|integer|min:1',
+        ]);
+
+        $cartItem = CartItem::where('CartId', $cartId)
+            ->where('UserId', Auth::id())
+            ->firstOrFail();
+
+        $cartItem->Quantity = $validated['Quantity'];
+        $cartItem->Total = $cartItem->Price * $cartItem->Quantity;
+        $cartItem->save();
+
+        return redirect()->route('cart.view')->with('success', 'Cantidad actualizada.');
+    }
+
+    /**
+     * Remove an item from the user's cart.
+     */
+    public function removeFromCart($cartId)
+    {
+        $cartItem = CartItem::where('CartId', $cartId)
+            ->where('UserId', Auth::id())
+            ->firstOrFail();
+
+        $cartItem->delete();
+
+        return redirect()->route('cart.view')->with('success', 'Producto eliminado del carrito.');
     }
 
     /**
@@ -90,6 +180,11 @@ class CartItemController extends Controller
             'Total'     => 'nullable|numeric|min:0',
         ]);
 
+        // Calcular el total si no está establecido
+        if (!isset($data['Total'])) {
+            $data['Total'] = $data['Price'] * $data['Quantity'];
+        }
+
         $cartItem->update($data);
 
         return redirect()
@@ -107,5 +202,16 @@ class CartItemController extends Controller
         return redirect()
             ->route('cart-items.index')
             ->with('success', 'Ítem de carrito eliminado correctamente.');
+    }
+
+    /**
+     * Vaciar el carrito del usuario actual.
+     */
+    public function clearCart()
+    {
+        CartItem::where('UserId', Auth::id())->delete();
+
+        return redirect()->route('cart.view')
+            ->with('success', 'Tu carrito ha sido vaciado.');
     }
 }

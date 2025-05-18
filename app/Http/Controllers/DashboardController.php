@@ -3,27 +3,23 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\User;
-use App\Models\Product;
 use App\Models\Order;
-use App\Models\Category;
 
 class DashboardController extends Controller
 {
     /**
-     * Muestra el panel de control principal.
+     * Muestra el dashboard del usuario.
      */
-    public function index()
+    public function index(Request $request)
     {
-        // Aquí puedes agregar cualquier lógica que necesites para tu dashboard
-        // Por ejemplo, contar registros para mostrar estadísticas
+        // Obtener las últimas órdenes del usuario
+        $orders = Order::where('UserId', $request->user()->UserId)
+                      ->latest()
+                      ->take(5)
+                      ->get();
 
-        // Para una versión futura podrías agregar estadísticas como:
-        // $usersCount = User::count();
-        // $productsCount = Product::count();
-        // $ordersCount = Order::count();
-        // $categoriesCount = Category::count();
+        // Aquí puedes añadir más datos para el dashboard
 
-        return view('dashboard.index');
+        return view('dashboard', compact('orders'));
     }
 }
