@@ -1,7 +1,6 @@
-// app/Http/Middleware/CheckRole.php
 <?php
 
-
+namespace App\Http\Middleware;
 
 use Closure;
 use Illuminate\Http\Request;

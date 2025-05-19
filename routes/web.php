@@ -61,6 +61,10 @@ Route::view('/sneakers', 'sneakers');
 Route::view('/accesorios', 'accesorios');
 Route::view('/moda', 'moda');
 
+// Rutas públicas para contacto
+Route::get('/contacto', [EmailController::class, 'showContactForm'])->name('email.form');
+Route::post('/contacto/enviar', [EmailController::class, 'sendContactEmail'])->name('email.send');
+
 /**
  * Rutas generales - Para cualquier usuario autenticado
  */
@@ -121,29 +125,13 @@ Route::middleware(['auth'])->group(function () {
 });
 
 /**
- * Rutas de administración - Solo para usuarios con rol de administrador
+ * Rutas para usuarios autenticados y con email verificado
  */
-Route::middleware(['auth', 'role:admin'])->prefix('admin')->group(function () {
-    // Dashboard de administración
-    Route::get('/dashboard', [AdminController::class, 'dashboard'])->name('admin.dashboard');
-
-    // Estadísticas y reportes
-    Route::get('/stats', [AdminController::class, 'statistics'])->name('admin.stats');
-    Route::get('/reports', [AdminController::class, 'reports'])->name('admin.reports');
-    Route::get('/reports/export', [AdminController::class, 'exportReport'])->name('admin.reports.export');
-
-    // Gestión de usuarios
-    Route::get('/users/roles', [UserController::class, 'manageRoles'])->name('admin.users.roles');
-    Route::post('/users/{user}/roles', [UserController::class, 'assignRoles'])->name('admin.users.assign-roles');
-
-    // Gestión de órdenes
-    Route::get('/orders', [OrderController::class, 'adminIndex'])->name('admin.orders');
-    Route::get('/orders/{order}', [OrderController::class, 'adminShow'])->name('admin.orders.show');
-    Route::patch('/orders/{order}/status', [OrderController::class, 'updateStatus'])->name('admin.orders.update-status');
-
-    // Gestión de inventario
-    Route::get('/inventory', [ProductInventoryController::class, 'adminIndex'])->name('admin.inventory');
-    Route::patch('/inventory/update-stock', [ProductInventoryController::class, 'batchUpdateStock'])->name('admin.inventory.update-stock');
+Route::middleware(['auth', 'verified'])->group(function () {
+    // Rutas base de PDFs (accesibles a usuarios verificados)
+    Route::get('pdf', [PDFController::class, 'index'])->name('pdf.index');
+    Route::get('pdf/products/{type}', [PDFController::class, 'productReport'])->name('pdf.products');
+    Route::get('pdf/invoice/{type}/{orderId}', [PDFController::class, 'orderInvoice'])->name('pdf.invoice');
 });
 
 /**
@@ -155,9 +143,33 @@ Route::get('combo_entidad_muni/{id_pais}', [AjaxController::class, 'cambia_combo
 Route::get('combo_municipio/{id_entidad}', [AjaxController::class, 'cambia_combo_2']);
 
 /**
- * Rutas Resource (CRUD) - Protegidas por autenticación y rol de administrador
+ * Rutas de administración - Solo para usuarios con rol de administrador
  */
 Route::middleware(['auth', 'role:admin'])->group(function () {
+    // Dashboard de administración
+    Route::prefix('admin')->group(function () {
+        Route::get('/dashboard', [AdminController::class, 'dashboard'])->name('admin.dashboard');
+
+        // Estadísticas y reportes
+        Route::get('/stats', [AdminController::class, 'statistics'])->name('admin.stats');
+        Route::get('/reports', [AdminController::class, 'reports'])->name('admin.reports');
+        Route::get('/reports/export', [AdminController::class, 'exportReport'])->name('admin.reports.export');
+
+        // Gestión de usuarios
+        Route::get('/users/roles', [UserController::class, 'manageRoles'])->name('admin.users.roles');
+        Route::post('/users/{user}/roles', [UserController::class, 'assignRoles'])->name('admin.users.assign-roles');
+
+        // Gestión de órdenes
+        Route::get('/orders', [OrderController::class, 'adminIndex'])->name('admin.orders');
+        Route::get('/orders/{order}', [OrderController::class, 'adminShow'])->name('admin.orders.show');
+        Route::patch('/orders/{order}/status', [OrderController::class, 'updateStatus'])->name('admin.orders.update-status');
+
+        // Gestión de inventario
+        Route::get('/inventory', [ProductInventoryController::class, 'adminIndex'])->name('admin.inventory');
+        Route::patch('/inventory/update-stock', [ProductInventoryController::class, 'batchUpdateStock'])->name('admin.inventory.update-stock');
+    });
+
+    // Rutas Resource (CRUD) para administradores
     Route::resource('countries', CountryController::class);
     Route::resource('entities', EntityController::class);
     Route::resource('municipalities', MunicipalityController::class);
@@ -178,24 +190,12 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
     Route::resource('reviews', ReviewController::class);
     Route::resource('provider-details', ProviderDetailController::class);
     //Route::resource('role-users', \App\Http\Controllers\RoleUserController::class);  // Comentado temporalmente
-    // Proteger rutas de PDFs y correos con middleware
-Route::middleware(['auth', 'verified'])->group(function () {
-    Route::get('pdf', [PDFController::class, 'index'])->name('pdf.index');
-    Route::get('pdf/products/{type}', [PDFController::class, 'productReport'])->name('pdf.products');
-    Route::get('pdf/invoice/{type}/{orderId}', [PDFController::class, 'orderInvoice'])->name('pdf.invoice');
-});
 
-// Solo los administradores pueden enviar correos de confirmación
-Route::get('/pedido/{order}/enviar-confirmacion', [EmailController::class, 'sendOrderConfirmation'])
-    ->name('email.order.confirmation')
-    ->middleware(['auth', 'role:admin']);
-});
+    // Envío de correos de confirmación (solo administradores)
+    Route::get('/pedido/{order}/enviar-confirmacion', [EmailController::class, 'sendOrderConfirmation'])
+        ->name('email.order.confirmation');
 
-/**
- * Rutas especializadas para gestión de ubicaciones.
- */
-Route::middleware(['auth', 'role:admin'])->group(function () {
-    // Vista principal de gestión
+    // Gestión de ubicaciones
     Route::get('/locations', [App\Http\Controllers\LocationController::class, 'index'])
         ->name('locations.manage');
 
@@ -213,9 +213,6 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
     Route::put('/locations/municipality/{municipalityId}/status',
         [App\Http\Controllers\LocationController::class, 'updateMunicipalityStatus']);
 
-    /**
-     * Rutas para visualización dinámica de datos.
-     */
     // Vista principal de datos dinámicos
     Route::get('/dynamic-data', [App\Http\Controllers\LocationController::class, 'dynamicData'])
         ->name('locations.dynamic-data');
@@ -236,12 +233,3 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
     Route::get('/productos/obtener/{productId}', [App\Http\Controllers\ProductAjaxController::class, 'obtenerProducto']);
     Route::put('/productos/actualizar/{productId}', [App\Http\Controllers\ProductAjaxController::class, 'actualizarProducto']);
 });
-// Rutas para PDFs
-Route::get('pdf', [PDFController::class, 'index'])->name('pdf.index');
-Route::get('pdf/products/{type}', [PDFController::class, 'productReport'])->name('pdf.products');
-Route::get('pdf/invoice/{type}/{orderId}', [PDFController::class, 'orderInvoice'])->name('pdf.invoice');
-
-// Rutas para correo
-Route::get('/contacto', [EmailController::class, 'showContactForm'])->name('email.form');
-Route::post('/contacto/enviar', [EmailController::class, 'sendContactEmail'])->name('email.send');
-Route::get('/pedido/{order}/enviar-confirmacion', [EmailController::class, 'sendOrderConfirmation'])->name('email.order.confirmation');

@@ -16,17 +16,40 @@ class AdminController extends Controller
      * @return \Illuminate\View\View
      */
     public function dashboard()
-    {
-        // Estadísticas básicas para el dashboard
-        $stats = [
-            'users' => User::count(),
-            'products' => Product::count(),
-            'orders' => Order::count(),
-            'categories' => Category::count()
-        ];
+{
+    // Estadísticas básicas para el dashboard
+    $stats = [
+        'users' => User::count(),
+        'products' => Product::count(),
+        'orders' => Order::count(),
+        'categories' => Category::count()
+    ];
 
-        return view('admin.dashboard', compact('stats'));
-    }
+    // Variables adicionales para la segunda parte del dashboard
+    $userCount = User::count();
+    $orderCount = Order::count();
+    $productCount = Product::count();
+
+    // Calcular ventas mensuales (del mes actual)
+    $monthlySales = Order::whereMonth('OrderDate', now()->month)
+        ->whereYear('OrderDate', now()->year)
+        ->sum('TotalAmount');
+
+    // Pedidos recientes
+    $recentOrders = Order::with('user')
+        ->orderBy('OrderDate', 'desc')
+        ->take(5)
+        ->get();
+
+    return view('admin.dashboard', compact(
+        'stats',
+        'userCount',
+        'orderCount',
+        'productCount',
+        'monthlySales',
+        'recentOrders'
+    ));
+}
 
     /**
      * Muestra estadísticas detalladas.

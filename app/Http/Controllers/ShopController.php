@@ -16,10 +16,11 @@ class ShopController extends Controller
             $query->where('CategoryId', $request->CategoryId);
         }
 
-        $products   = $query->paginate(12)->withQueryString();
+        $products = $query->paginate(12)->withQueryString();
         $categories = Category::pluck('Name', 'CategoryId');
 
-        return view('shop.index', compact('products', 'categories'));
+        // Retorna la vista utilizando el layout correcto
+        return view('home', compact('products', 'categories'));
     }
 
 

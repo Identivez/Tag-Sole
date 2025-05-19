@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    <title>@yield('title', config('app.name', 'Laravel'))</title>
+    <title>{{ config('app.name', 'Laravel') }}</title>
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.bunny.net">
@@ -14,38 +14,24 @@
     <!-- Estilos de tu plantilla original -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="{{ asset('css/custom.css') }}" rel="stylesheet">
-    @stack('styles')
 
     <!-- Scripts -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body>
-    <!-- Incluir el navbar de tu plantilla original que incluirá la lógica de autenticación -->
+    <!-- Incluir el navbar de tu plantilla original con autenticación -->
     @include('partials.navbar')
 
-    <!-- Sección de encabezado si existe -->
-    @hasSection('header')
-        <section class="header-section">
-            <div class="container">
-                @yield('header')
-            </div>
-        </section>
-    @endif
-
-    <!-- Contenido principal -->
-    <main>
-        @yield('content')
+    <!-- Contenido principal que usa $slot en lugar de @yield -->
+    <main class="container py-4">
+        {{ $slot }}
     </main>
 
     <!-- Incluir el footer de tu plantilla original -->
     @include('partials.footer')
 
-    <!-- Incluir los modals de tu plantilla original -->
-    @include('partials.modals')
-
     <!-- Scripts de Bootstrap y tu plantilla -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
     <script src="{{ asset('js/custom.js') }}"></script>
-    @stack('scripts')
 </body>
 </html>
