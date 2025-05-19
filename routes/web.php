@@ -39,7 +39,9 @@ use App\Http\Controllers\{
     PaymentController,
     OrderDetailController,
     ReviewController,
-    ProviderDetailController
+    ProviderDetailController,
+    PDFController,
+    EmailController
 };
 
 // Incluir rutas de autenticación
@@ -176,6 +178,17 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
     Route::resource('reviews', ReviewController::class);
     Route::resource('provider-details', ProviderDetailController::class);
     //Route::resource('role-users', \App\Http\Controllers\RoleUserController::class);  // Comentado temporalmente
+    // Proteger rutas de PDFs y correos con middleware
+Route::middleware(['auth', 'verified'])->group(function () {
+    Route::get('pdf', [PDFController::class, 'index'])->name('pdf.index');
+    Route::get('pdf/products/{type}', [PDFController::class, 'productReport'])->name('pdf.products');
+    Route::get('pdf/invoice/{type}/{orderId}', [PDFController::class, 'orderInvoice'])->name('pdf.invoice');
+});
+
+// Solo los administradores pueden enviar correos de confirmación
+Route::get('/pedido/{order}/enviar-confirmacion', [EmailController::class, 'sendOrderConfirmation'])
+    ->name('email.order.confirmation')
+    ->middleware(['auth', 'role:admin']);
 });
 
 /**
@@ -223,3 +236,12 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
     Route::get('/productos/obtener/{productId}', [App\Http\Controllers\ProductAjaxController::class, 'obtenerProducto']);
     Route::put('/productos/actualizar/{productId}', [App\Http\Controllers\ProductAjaxController::class, 'actualizarProducto']);
 });
+// Rutas para PDFs
+Route::get('pdf', [PDFController::class, 'index'])->name('pdf.index');
+Route::get('pdf/products/{type}', [PDFController::class, 'productReport'])->name('pdf.products');
+Route::get('pdf/invoice/{type}/{orderId}', [PDFController::class, 'orderInvoice'])->name('pdf.invoice');
+
+// Rutas para correo
+Route::get('/contacto', [EmailController::class, 'showContactForm'])->name('email.form');
+Route::post('/contacto/enviar', [EmailController::class, 'sendContactEmail'])->name('email.send');
+Route::get('/pedido/{order}/enviar-confirmacion', [EmailController::class, 'sendOrderConfirmation'])->name('email.order.confirmation');

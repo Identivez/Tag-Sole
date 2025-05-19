@@ -5,7 +5,13 @@
 @section('content')
   <h1>Detalles de Pedido</h1>
   <a href="{{ route('order-details.create') }}" class="btn">Crear Detalle</a>
+<a href="{{ route('pdf.invoice', [1, $order->OrderId]) }}" class="btn btn-primary" target="_blank">
+    <i class="fa fa-file-pdf"></i> Ver factura
+</a>
 
+<a href="{{ route('pdf.invoice', [2, $order->OrderId]) }}" class="btn btn-secondary">
+    <i class="fa fa-download"></i> Descargar factura
+</a>
   <table class="table-crud">
     <thead>
       <tr>

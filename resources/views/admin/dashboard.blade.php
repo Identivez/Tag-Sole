@@ -220,6 +220,12 @@
                             <a href="{{ route('sizes.index') }}" class="text-center py-3 px-4 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50">
                                 Tallas
                             </a>
+                            <a href="{{ route('pdf.index') }}" class="btn btn-primary">
+    <i class="fa fa-file-pdf"></i> Reportes PDF
+</a>
+<a href="{{ route('email.order.confirmation', $order->OrderId) }}" class="btn btn-info">
+    <i class="fa fa-envelope"></i> Enviar confirmación por correo
+</a>
                         </div>
                     </div>
                 </div>

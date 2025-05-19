@@ -130,6 +130,15 @@
                     <x-responsive-nav-link :href="route('user.favorites')">
                         {{ __('Favoritos') }}
                     </x-responsive-nav-link>
+                    <!-- Enlaces para PDFs -->
+<x-dropdown-link :href="route('pdf.index')">
+    {{ __('Reportes PDF') }}
+</x-dropdown-link>
+
+<!-- Enlaces para contacto/correo -->
+<x-dropdown-link :href="route('email.form')">
+    {{ __('Contacto') }}
+</x-dropdown-link>
 
                     <x-responsive-nav-link :href="route('cart.view')">
                         {{ __('Carrito') }}
