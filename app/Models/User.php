@@ -73,7 +73,21 @@ class User extends Authenticatable
      */
     public function hasRole($roleId)
     {
-        return $this->roles()->where('RoleId', $roleId)->exists();
+        // Aquí es importante asegurarse de que estamos buscando correctamente
+        // en la tabla de roles con la clave primaria adecuada
+        return $this->roles()
+            ->where('roles.RoleId', $roleId)
+            ->exists();
+    }
+
+    /**
+     * Comprobar si el usuario tiene el rol de admin
+     *
+     * @return bool
+     */
+    public function isAdmin()
+    {
+        return $this->hasRole('admin');
     }
 
     // Accessors y Mutators

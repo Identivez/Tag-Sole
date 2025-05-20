@@ -13,8 +13,6 @@ class RouteServiceProvider extends ServiceProvider
     /**
      * La ruta a la que se redirigirá a los usuarios después de iniciar sesión.
      *
-     * Esta constante se utiliza en los controladores de autenticación.
-     *
      * @var string
      */
     public const HOME = '/dashboard';
@@ -28,11 +26,11 @@ class RouteServiceProvider extends ServiceProvider
 
         $this->routes(function () {
             Route::middleware('api')
-                ->prefix('api')
-                ->group(base_path('routes/api.php'));
+                 ->prefix('api')
+                 ->group(base_path('routes/api.php'));
 
             Route::middleware('web')
-                ->group(base_path('routes/web.php'));
+                 ->group(base_path('routes/web.php'));
         });
     }
 
