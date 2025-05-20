@@ -104,6 +104,12 @@
         </div>
         <div class="product-content padding-small">
             <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-5">
+                @php
+                    // Esta sección normalmente debería utilizar datos reales de productos
+                    // Se recomienda usar una colección de productos obtenida del controlador
+                    // Por ejemplo: @foreach($featuredProducts as $product)
+                @endphp
+
                 <div class="col mb-4">
                     <div class="product-card position-relative">
                         <div class="card-img">
@@ -125,12 +131,14 @@
                         </div>
                         <div class="card-detail d-flex justify-content-between align-items-center mt-3">
                             <h3 class="card-title fs-6 fw-normal m-0">
-                                <a href="#">Running shoes for men</a>
+                                <a href="{{ route('products.index') }}">Running shoes for men</a>
                             </h3>
                             <span class="card-price fw-bold">$99</span>
                         </div>
                     </div>
                 </div>
+
+                <!-- Repetir para otros productos... -->
                 <div class="col mb-4">
                     <div class="product-card position-relative">
                         <div class="card-img">
@@ -152,12 +160,14 @@
                         </div>
                         <div class="card-detail d-flex justify-content-between align-items-center mt-3">
                             <h3 class="card-title fs-6 fw-normal m-0">
-                                <a href="#">Running shoes for men</a>
+                                <a href="{{ route('products.index') }}">Running shoes for men</a>
                             </h3>
                             <span class="card-price fw-bold">$99</span>
                         </div>
                     </div>
                 </div>
+
+                <!-- Se pueden agregar más productos aquí... -->
                 <div class="col mb-4">
                     <div class="product-card position-relative">
                         <div class="card-img">
@@ -179,12 +189,13 @@
                         </div>
                         <div class="card-detail d-flex justify-content-between align-items-center mt-3">
                             <h3 class="card-title fs-6 fw-normal m-0">
-                                <a href="#">Running shoes for men</a>
+                                <a href="{{ route('products.index') }}">Running shoes for men</a>
                             </h3>
                             <span class="card-price fw-bold">$99</span>
                         </div>
                     </div>
                 </div>
+
                 <div class="col mb-4">
                     <div class="product-card position-relative">
                         <div class="card-img">
@@ -206,12 +217,13 @@
                         </div>
                         <div class="card-detail d-flex justify-content-between align-items-center mt-3">
                             <h3 class="card-title fs-6 fw-normal m-0">
-                                <a href="#">Running shoes for men</a>
+                                <a href="{{ route('products.index') }}">Running shoes for men</a>
                             </h3>
                             <span class="card-price fw-bold">$99</span>
                         </div>
                     </div>
                 </div>
+
                 <div class="col mb-4">
                     <div class="product-card position-relative">
                         <div class="card-img">
@@ -233,7 +245,7 @@
                         </div>
                         <div class="card-detail d-flex justify-content-between align-items-center mt-3">
                             <h3 class="card-title fs-6 fw-normal m-0">
-                                <a href="#">Running shoes for men</a>
+                                <a href="{{ route('products.index') }}">Running shoes for men</a>
                             </h3>
                             <span class="card-price fw-bold">$99</span>
                         </div>
@@ -283,6 +295,13 @@
         </div>
         <div class="product-content padding-small">
             <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-5">
+                @php
+                    // Esta sección normalmente debería utilizar datos reales de los últimos productos
+                    // Se recomienda usar una colección de productos obtenida del controlador
+                    // Por ejemplo: @foreach($latestProducts as $product)
+                @endphp
+
+                <!-- Productos más recientes... -->
                 <div class="col mb-4 mb-3">
                     <div class="product-card position-relative">
                         <div class="card-img">
@@ -304,12 +323,14 @@
                         </div>
                         <div class="card-detail d-flex justify-content-between align-items-center mt-3">
                             <h3 class="card-title fs-6 fw-normal m-0">
-                                <a href="#">Running shoes for men</a>
+                                <a href="{{ route('products.index') }}">Running shoes for men</a>
                             </h3>
                             <span class="card-price fw-bold">$99</span>
                         </div>
                     </div>
                 </div>
+
+                <!-- Agregar más productos recientes aquí... -->
                 <div class="col mb-4 mb-3">
                     <div class="product-card position-relative">
                         <div class="card-img">
@@ -331,12 +352,14 @@
                         </div>
                         <div class="card-detail d-flex justify-content-between align-items-center mt-3">
                             <h3 class="card-title fs-6 fw-normal m-0">
-                                <a href="#">Running shoes for men</a>
+                                <a href="{{ route('products.index') }}">Running shoes for men</a>
                             </h3>
                             <span class="card-price fw-bold">$99</span>
                         </div>
                     </div>
                 </div>
+
+                <!-- Continuar con los demás productos... -->
                 <div class="col mb-4 mb-3">
                     <div class="product-card position-relative">
                         <div class="card-img">
@@ -358,12 +381,13 @@
                         </div>
                         <div class="card-detail d-flex justify-content-between align-items-center mt-3">
                             <h3 class="card-title fs-6 fw-normal m-0">
-                                <a href="#">Running shoes for men</a>
+                                <a href="{{ route('products.index') }}">Running shoes for men</a>
                             </h3>
                             <span class="card-price fw-bold">$99</span>
                         </div>
                     </div>
                 </div>
+
                 <div class="col mb-4 mb-3">
                     <div class="product-card position-relative">
                         <div class="card-img">
@@ -385,12 +409,13 @@
                         </div>
                         <div class="card-detail d-flex justify-content-between align-items-center mt-3">
                             <h3 class="card-title fs-6 fw-normal m-0">
-                                <a href="#">Running shoes for men</a>
+                                <a href="{{ route('products.index') }}">Running shoes for men</a>
                             </h3>
                             <span class="card-price fw-bold">$99</span>
                         </div>
                     </div>
                 </div>
+
                 <div class="col mb-4 mb-3">
                     <div class="product-card position-relative">
                         <div class="card-img">
@@ -412,7 +437,7 @@
                         </div>
                         <div class="card-detail d-flex justify-content-between align-items-center mt-3">
                             <h3 class="card-title fs-6 fw-normal m-0">
-                                <a href="#">Running shoes for men</a>
+                                <a href="{{ route('products.index') }}">Running shoes for men</a>
                             </h3>
                             <span class="card-price fw-bold">$99</span>
                         </div>

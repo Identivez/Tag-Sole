@@ -39,14 +39,28 @@
         <path d="M10.5 21C11.3284 21 12 20.3284 12 19.5C12 18.6716 11.3284 18 10.5 18C9.67157 18 9 18.6716 9 19.5C9 20.3284 9.67157 21 10.5 21Z" fill="black" />
         <path d="M16.5 21C17.3284 21 18 20.3284 18 19.5C18 18.6716 17.3284 18 16.5 18C15.6716 18 15 18.6716 15 19.5C15 20.3284 15.6716 21 16.5 21Z" fill="black" />
       </symbol>
-      <!-- Incluir el resto de los símbolos SVG aquí -->
+      <symbol xmlns="http://www.w3.org/2000/svg" id="close" viewBox="0 0 24 24">
+        <path fill="currentColor" d="m16.192 6.344-4.243 4.242-4.242-4.242-1.414 1.414L10.535 12l-4.242 4.242 1.414 1.414 4.242-4.242 4.243 4.242 1.414-1.414L13.364 12l4.242-4.242z"/>
+      </symbol>
+      <symbol xmlns="http://www.w3.org/2000/svg" id="search" viewBox="0 0 24 24">
+        <path fill="currentColor" d="M10 18a7.952 7.952 0 0 0 4.897-1.688l4.396 4.396 1.414-1.414-4.396-4.396A7.952 7.952 0 0 0 18 10c0-4.411-3.589-8-8-8s-8 3.589-8 8 3.589 8 8 8zm0-14c3.309 0 6 2.691 6 6s-2.691 6-6 6-6-2.691-6-6 2.691-6 6-6z"/>
+      </symbol>
+      <!-- Aseguramos que todos los símbolos SVG necesarios estén definidos -->
     </svg>
 
     <!-- Preloader -->
     <div class="preloader" style="position: fixed;top:0;left:0;width: 100%;height: 100%;background-color: #fff;display: flex;align-items: center;justify-content: center;z-index: 9999;">
         <svg version="1.1" id="L4" width="100" height="100" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
         viewBox="0 0 50 100" enable-background="new 0 0 0 0" xml:space="preserve">
-        <!-- ... preloader SVG ... -->
+            <circle fill="#000" stroke="none" cx="25" cy="30" r="6">
+                <animate attributeName="opacity" dur="1s" values="0;1;0" repeatCount="indefinite" begin="0.1"/>
+            </circle>
+            <circle fill="#000" stroke="none" cx="25" cy="50" r="6">
+                <animate attributeName="opacity" dur="1s" values="0;1;0" repeatCount="indefinite" begin="0.2"/>
+            </circle>
+            <circle fill="#000" stroke="none" cx="25" cy="70" r="6">
+                <animate attributeName="opacity" dur="1s" values="0;1;0" repeatCount="indefinite" begin="0.3"/>
+            </circle>
         </svg>
     </div>
 
@@ -67,13 +81,13 @@
         </div>
     </div>
 
-    <!-- Incluir los modales -->
+    <!-- Incluir los modales (importante para la funcionalidad de carrito, login, etc.) -->
     @include('partials.modals')
 
     <!-- Incluir header/navbar -->
     @include('partials.navbar')
 
-    <!-- Contenido principal -->
+    <!-- Contenido principal - Esta sección es fundamental para la visualización de las vistas que extienden este layout -->
     <main>
         @hasSection('content')
             @yield('content')
@@ -85,12 +99,23 @@
     <!-- Incluir footer -->
     @include('partials.footer')
 
-    <!-- Scripts originales -->
+    <!-- Scripts originales - Necesarios para la funcionalidad del sitio -->
     <script src="{{ asset('js/jquery-1.11.0.min.js') }}"></script>
     <script src="{{ asset('js/plugins.js') }}"></script>
     <script src="{{ asset('js/script.js') }}"></script>
 
-    <!-- Scripts específicos de la página -->
+    <!-- Scripts específicos de la página - Permite a las vistas individuales añadir sus propios scripts -->
     @stack('scripts')
+
+    <!-- Script para resolver posibles conflictos de nombres con 'role' -->
+    <script>
+        // Este script ayuda a prevenir cualquier problema de resolución de nombres con 'role'
+        document.addEventListener('DOMContentLoaded', function() {
+            // Inicializamos los componentes del sitio
+            if (typeof initComponents === 'function') {
+                initComponents();
+            }
+        });
+    </script>
 </body>
 </html>
