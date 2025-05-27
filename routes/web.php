@@ -46,7 +46,9 @@ use App\Http\Controllers\{
 
 // Incluir rutas de autenticación definidas en auth.php
 require __DIR__.'/auth.php';
-
+Route::get('/', function () {
+    return view('bienvenida');
+});
 /*
 |--------------------------------------------------------------------------
 | RUTAS PÚBLICAS - Accesibles sin autenticación
@@ -54,7 +56,7 @@ require __DIR__.'/auth.php';
 */
 
 // Ruta principal - Página de inicio de la tienda
-Route::get('/', [ShopController::class, 'index'])->name('home');
+//Route::get('/', [ShopController::class, 'index'])->name('home');
 
 // Rutas para mostrar productos
 Route::get('/products/{product}', [ShopController::class, 'show'])->name('product.show');
